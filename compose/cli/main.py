@@ -1348,10 +1348,35 @@ def run_one_off_container(container_options, project, service, options, toplevel
 
     project.initialize()
 
+    ## Start debugging statements
+
+    print("ASDF - project services: ", project.get_services_without_duplicate())
+    # TODO: look at the containers in the service - see what the deepest is for me to get the containers
+
+    # # ASDF: Let's check the services in the project
+    if container_options['ports'] is not None:
+        for service in project.get_services_without_duplicate():
+            print("ASDF: service-name: ", service.name)
+            print("ASDF: service-containers: ", service.containers())
+
+            for container in service.containers():
+                print("ASDF - container ports: ", container.ports)
+                for key, value in container.ports.items():
+                    if value is not None:
+                        for x in value:
+                            print('ASDF - value: ', x['HostPort'])
+                            for port in container_options['ports']:
+                                if port == x['HostPort']:
+                                    print('Host port is already in use')
+                
+
+    ## End debugging statements
+
     container = service.create_container(
         quiet=True,
         one_off=True,
         **container_options)
+    
 
     use_network_aliases = options['--use-aliases']
 
