@@ -527,6 +527,7 @@ def process_config_section(config_file, config, section, environment, interpolat
 
 
 def process_config_file(config_file, environment, service_name=None, interpolate=True):
+
     services = process_config_section(
         config_file,
         config_file.get_service_dicts(),
@@ -552,22 +553,27 @@ def process_config_file(config_file, environment, service_name=None, interpolate
             environment,
             interpolate,
         )
-        if config_file.version >= const.COMPOSEFILE_V3_1:
-            processed_config['secrets'] = process_config_section(
-                config_file,
-                config_file.get_secrets(),
-                'secret',
-                environment,
-                interpolate,
-            )
-        if config_file.version >= const.COMPOSEFILE_V3_3:
-            processed_config['configs'] = process_config_section(
-                config_file,
-                config_file.get_configs(),
-                'config',
-                environment,
-                interpolate,
-            )
+
+        try:
+            if config_file.version >= const.COMPOSEFILE_V3_1:
+                processed_config['secrets'] = process_config_section(
+                    config_file,
+                    config_file.get_secrets(),
+                    'secret',
+                    environment,
+                    interpolate,
+                )
+            if config_file.version >= const.COMPOSEFILE_V3_3:
+                processed_config['configs'] = process_config_section(
+                    config_file,
+                    config_file.get_configs(),
+                    'config',
+                    environment,
+                    interpolate,
+                )
+        except TypeError:
+            raise ConfigurationError(
+                "The `version` field contains an unexpected character: {}".format(config_file.version))
     else:
         processed_config = services
 
